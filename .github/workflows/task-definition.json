@@ -9,10 +9,10 @@
             "memoryReservation": 512,
             "portMappings": [
                 {
-                    "containerPort": 5000,
+                    "containerPort": 80,
                     "hostPort": 80,
                     "protocol": "tcp",
-                    "name": "poc21211-5000-tcp",
+                    "name": "poc21211-80-tcp",
                     "appProtocol": "http"
                 }
             ],
@@ -86,6 +86,5 @@
         "FARGATE"
     ],
     "cpu": "256",
-    "memory": "512",
-    "registeredAt": "2023-11-09T18:24:32.220000+08:00"
+    "memory": "512"
 }

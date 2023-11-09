@@ -24,15 +24,16 @@ env:
   CONTAINER_NAME: poc21211           # set this to the name of the container in the
                                                # containerDefinitions section of your task definition
 
-permissions:
-  contents: read
-  id-token: write
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: production
+    # environment: production
+
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout

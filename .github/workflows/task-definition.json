@@ -9,10 +9,10 @@
             "memoryReservation": 512,
             "portMappings": [
                 {
-                    "containerPort": 80,
+                    "containerPort": 5000,
                     "hostPort": 80,
                     "protocol": "tcp",
-                    "name": "poc21211-80-tcp",
+                    "name": "poc21211-5000-tcp",
                     "appProtocol": "http"
                 }
             ],
@@ -87,6 +87,5 @@
     ],
     "cpu": "256",
     "memory": "512",
-    "registeredAt": "2023-11-09T18:24:32.220000+08:00",
-    "registeredBy": "arn:aws:iam::668363134003:user/tony"
+    "registeredAt": "2023-11-09T18:24:32.220000+08:00"
 }

@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "poc21211",
-            "image": "668363134003.dkr.ecr.ap-northeast-1.amazonaws.com/poc21211",
+            "image": "966812567875.dkr.ecr.ap-northeast-1.amazonaws.com/ecr2311",
             "cpu": 256,
             "memory": 512,
             "memoryReservation": 512,
@@ -34,8 +34,8 @@
         }
     ],
     "family": "task-manually",
-    "taskRoleArn": "arn:aws:iam::668363134003:role/ecsTaskExecutionRole",
-    "executionRoleArn": "arn:aws:iam::668363134003:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::966812567875:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::966812567875:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [],
     "placementConstraints": [],

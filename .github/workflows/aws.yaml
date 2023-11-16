@@ -83,7 +83,8 @@ jobs:
           wait-for-service-stability: true
 
       - name: Google Chat Notify
-        uses: 'google-github-actions/sent-google-chat-webhook@v0.0.1'
+        id: notify google chat
+        uses: google-github-actions/sent-google-chat-webhook@v0.0.1
         with:
           webhook_url: '${{ env.CHAT_WEBHOOK }}'
           mention: "<users/all>"

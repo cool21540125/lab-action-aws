@@ -36,8 +36,7 @@ jobs:
         run: |
           echo "fake deploy"
           sleep 2
-          echo "fake deploy error"
-          exit 1
+          exit 0
 
       #- name: Checkout
       #  uses: actions/checkout@v4

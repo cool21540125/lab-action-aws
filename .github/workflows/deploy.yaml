@@ -14,6 +14,7 @@ env:
   AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID}}
   AWS_DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE}}
   CHAT_WEBHOOK: ${{ vars.CHAT_WEBHOOK}}
+  DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
   ECS_TASK_DEFINITION: .github/workflows/task-definition.json
 
 jobs:
@@ -52,7 +53,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
-          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+          DEMO_SECRET: ${{ env.DEMO_SECRET }}
         run: |
           docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

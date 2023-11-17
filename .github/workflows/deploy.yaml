@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+    
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -29,10 +30,8 @@ jobs:
       id-token: write
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
-
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -41,12 +40,10 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
         timeout-minutes: 1
 
-
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         timeout-minutes: 1
-
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
@@ -59,17 +56,40 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      # 不由 code 控管 task definition
       - name: Download task definition
         id: task-deff
         run: |
           aws ecs describe-task-definition --task-definition taskDef2311 --query taskDefinition > task-definition.json
 
-
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        id: ecs-deploy
         with:
           task-definition: task-definition.json
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+
+  notify:
+    name: Send Notification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Notification when begin
+        timeout-minutes: 1
+        run: |
+          curl -X POST --url ${{ env.CHAT_WEBHOOK }} \
+            --header content-type: application/json \
+            --data '{"text": "START","thread": {"threadKey": "${{ github.sha }}"}}'
+
+      - name: Send Notification after deploy
+        timeout-minutes: 1
+        needs: deploy
+        run: |
+          curl -X POST --url ${{ env.CHAT_WEBHOOK }} \
+            --header content-type: application/json \
+            --data '{"text": "DONE","thread": {"threadKey": "${{ github.sha }}"}}'
+
+
+
+

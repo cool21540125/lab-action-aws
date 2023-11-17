@@ -32,45 +32,51 @@ jobs:
         run: |
           curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "Start: ${{ github.sha }}","thread": {"threadKey": "${{ github.sha }}"}}'
 
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.AWS_DEPLOY_ROLE }}
-          aws-region: ${{ env.AWS_REGION }}
-        timeout-minutes: 1
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        timeout-minutes: 1
-
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-          DEMO_SECRET: ${{ env.DEMO_SECRET }}
+      - name: fake deploy
         run: |
-          docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "fake deploy"
+          sleep 5
+          echo "fake deploy done"
 
-      - name: Download task definition
-        id: task-deff
-        run: |
-          aws ecs describe-task-definition --task-definition taskDef2311 --query taskDefinition > task-definition.json
-
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        id: ecs-deploy
-        with:
-          task-definition: task-definition.json
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+      #- name: Checkout
+      #  uses: actions/checkout@v4
+#
+      #- name: Configure AWS credentials
+      #  uses: aws-actions/configure-aws-credentials@v4
+      #  with:
+      #    role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.AWS_DEPLOY_ROLE }}
+      #    aws-region: ${{ env.AWS_REGION }}
+      #  timeout-minutes: 1
+#
+      #- name: Login to Amazon ECR
+      #  id: login-ecr
+      #  uses: aws-actions/amazon-ecr-login@v2
+      #  timeout-minutes: 1
+#
+      #- name: Build, tag, and push image to Amazon ECR
+      #  id: build-image
+      #  env:
+      #    ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #    IMAGE_TAG: ${{ github.sha }}
+      #    DEMO_SECRET: ${{ env.DEMO_SECRET }}
+      #  run: |
+      #    docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+      #    docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      #    echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+#
+      #- name: Download task definition
+      #  id: task-deff
+      #  run: |
+      #    aws ecs describe-task-definition --task-definition taskDef2311 --query taskDefinition > task-definition.json
+#
+      #- name: Deploy Amazon ECS task definition
+      #  uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      #  id: ecs-deploy
+      #  with:
+      #    task-definition: task-definition.json
+      #    service: ${{ env.ECS_SERVICE }}
+      #    cluster: ${{ env.ECS_CLUSTER }}
+      #    wait-for-service-stability: true
 
   finally:
     name: Send Notification after deploy

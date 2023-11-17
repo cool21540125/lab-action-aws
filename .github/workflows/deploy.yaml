@@ -88,4 +88,4 @@ jobs:
       - name: Send Notification after deploy
         timeout-minutes: 1
         run: |
-          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "Result: ${{ jobs.deploy.outputs }}","thread": {"threadKey": "${{ github.sha }}"}}'
+          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "Result: ${{ needs.deploy.result }}","thread": {"threadKey": "${{ github.sha }}"}}'

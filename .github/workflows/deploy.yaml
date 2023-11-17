@@ -35,8 +35,9 @@ jobs:
       - name: fake deploy
         run: |
           echo "fake deploy"
-          sleep 5
-          echo "fake deploy done"
+          sleep 2
+          echo "fake deploy error"
+          exit 1
 
       #- name: Checkout
       #  uses: actions/checkout@v4

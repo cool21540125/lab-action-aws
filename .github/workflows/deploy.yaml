@@ -15,7 +15,6 @@ env:
   AWS_DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE}}
   CHAT_WEBHOOK: ${{ vars.CHAT_WEBHOOK}}
   DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
-  ECS_TASK_DEFINITION: .github/workflows/task-definition.json
 
 jobs:
   deploy:
@@ -60,21 +59,11 @@ jobs:
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       # 不由 code 控管 task definition
-      ######- name: Download task definition
-      ######  id: task-deff
-      ######  run: |
-      ######    aws ecs describe-task-definition \
-      ######      --task-definition my-task-definition-family \
-      ######      --query taskDefinition > .github/task-definition.json
-
-      # 由 code 控管 task definition
-      - name: Fill in the new image ID in the Amazon ECS task definition
+      - name: Download task definition
         id: task-deff
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+        run: |
+          aws ecs describe-task-definition --task-definition my-task-definition-family --query taskDefinition > task-definition.json
+
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

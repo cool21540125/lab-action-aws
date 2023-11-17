@@ -78,7 +78,7 @@ jobs:
       - name: Send Notification when begin
         timeout-minutes: 1
         run: |
-          curl -X POST --url ${{ env.CHAT_WEBHOOK }} --header content-type: application/json --data '{"text": "START","thread": {"threadKey": "${{ github.sha }}"}}'
+          curl -X POST --url ${{ env.CHAT_WEBHOOK }} --header "content-type: application/json" --data '{"text": "START","thread": {"threadKey": "${{ github.sha }}"}}'
 
   notify2:
     name: Send Notification after deploy
@@ -88,8 +88,4 @@ jobs:
       - name: Send Notification after deploy
         timeout-minutes: 1
         run: |
-          curl -X POST --url ${{ env.CHAT_WEBHOOK }} --header content-type: application/json --data '{"text": "DONE","thread": {"threadKey": "${{ github.sha }}"}}'
-
-
-
-
+          curl -X POST --url ${{ env.CHAT_WEBHOOK }} --header "content-type: application/json" --data '{"text": "DONE","thread": {"threadKey": "${{ github.sha }}"}}'

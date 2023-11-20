@@ -1,10 +1,12 @@
 name: Deploy to Amazon ECS
-run-name: ${{ github.actor }}
+run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
 
 on:
   push:
     branches:
       - main
+    tags:
+      - '*'
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -63,7 +65,7 @@ jobs:
       - name: Download task definition
         id: task-deff
         run: |
-          aws ecs describe-task-definition --task-definition taskDef2311 --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition taskDefLineBotFlask --query taskDefinition > task-definition.json
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

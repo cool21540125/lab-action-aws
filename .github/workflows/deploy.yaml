@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - '*'
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -23,10 +21,12 @@ jobs:
 
   deploy:
     name: Deploy
+    run-name: ${{ github.actor }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
+
 
     steps:
       - name: Send Notification after deploy

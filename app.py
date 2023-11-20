@@ -10,7 +10,7 @@ app = Flask(__name__)
 @app.route("/")
 def hello_world():
     secret = os.getenv("DEMO_SECRET", "default name")
-    return f"Hello, {secret}"
+    return f"Hello 1120 1806, {secret}"
 
 
 if __name__ == "__main__":

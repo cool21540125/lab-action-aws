@@ -55,7 +55,8 @@ jobs:
           echo ${{ env.AWS_SECRET_ACCESS_KEY }}
           echo ${{ env.TAG }}
           echo "--------------------"
-          aws s3 ls
+          aws version
+          aws sts get-caller-identity
           echo "===================="
 
       # - name: Send Notification and start deploy

@@ -4,7 +4,7 @@ run-name: Deploy to ECS triggered by @${{ github.actor }}
 
 
 env:
-  AWS_DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE}}
+  ECS_EXECUTION_ROLE: ${{ vars.ECS_EXECUTION_ROLE}}
   AWS_REGION: ${{ vars.AWS_REGION }}
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
   ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
@@ -66,17 +66,17 @@ jobs:
       # - name: Checkout
       #   uses: actions/checkout@v4
 
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCESS_KEY_ID }}:role/${{ env.AWS_DEPLOY_ROLE }}
-      #     aws-region: ${{ env.AWS_REGION }}
-      #   timeout-minutes: 1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCESS_KEY_ID }}:role/${{ env.ECS_EXECUTION_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+        timeout-minutes: 1
 
-      # - name: Login to Amazon ECR
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@v2
-      #   timeout-minutes: 1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        timeout-minutes: 1
 
       # - name: Build, tag, and push image to Amazon ECR
       #   id: build-image

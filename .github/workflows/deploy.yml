@@ -55,7 +55,7 @@ jobs:
           echo ${{ env.AWS_SECRET_ACCESS_KEY }}
           echo ${{ env.TAG }}
           echo "--------------------"
-          aws version
+          aws --version
           aws sts get-caller-identity
           echo "===================="
 

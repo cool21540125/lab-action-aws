@@ -36,7 +36,8 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]];  then
             IMAGE_TAG=${{ github.sha }}
           else
-            IMAGE_TAG=${${{ github.ref }}##*/}
+            IMAGE_TAG=${{ github.ref }}
+            IMAGE_TAG=${IMAGE_TAG##*/}
           fi
           echo $IMAGE_TAG
 

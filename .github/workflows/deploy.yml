@@ -47,7 +47,7 @@ jobs:
           fi
           echo $TAG
 
-      - name: use reusable flow
+      - name: testing2
         run: |
           #!/bin/env bash
           echo "--------------------"
@@ -66,10 +66,20 @@ jobs:
       # - name: Checkout
       #   uses: actions/checkout@v4
 
+      ### Assume Role for OIDC Usage
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCESS_KEY_ID }}:role/${{ env.ECS_EXECUTION_ROLE }}
+      #     aws-region: ${{ env.AWS_REGION }}
+      #   timeout-minutes: 1
+
+      ### Assume Role for Cross Account Usage
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCESS_KEY_ID }}:role/${{ env.ECS_EXECUTION_ROLE }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
         timeout-minutes: 1
 

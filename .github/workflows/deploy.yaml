@@ -12,14 +12,12 @@ on:
 
 
 env:
+  AWS_DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE}}
   AWS_REGION: ${{ vars.AWS_REGION }}
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
   ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
-  CONTAINER_NAME: ${{ vars.CONTAINER_NAME}}
-  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID}}
-  AWS_DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE}}
-  CHAT_WEBHOOK: ${{ vars.CHAT_WEBHOOK}}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  CHAT_WEBHOOK: ${{ secrets.CHAT_WEBHOOK}}
   DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
 
 
@@ -32,43 +30,53 @@ jobs:
       id-token: write
 
     steps:
-      - name: Send Notification and start deploy
-        timeout-minutes: 1
+      - name: testing
         run: |
-          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送 Commit: `${{ github.sha }}` 到 `${{ github.repository }}`, 開始觸發 CD Pipeline","thread": {"threadKey": "${{ github.sha }}"}}'
+          #!/bin/env bash
+          if [[ "${{ github.ref }}" == "master" ]];  then
+            IMAGE_TAG=${{ github.sha }}
+          else
+            IMAGE_TAG=${{ github.ref }}
+          fi
+          echo $IMAGE_TAG
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      # - name: Send Notification and start deploy
+      #   timeout-minutes: 1
+      #   run: |
+      #     curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送 Commit: `${{ github.ref }}` 到 `${{ github.repository }}`, 開始觸發 CD Pipeline","thread": {"threadKey": "${{ github.ref }}"}}'
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.AWS_DEPLOY_ROLE }}
-          aws-region: ${{ env.AWS_REGION }}
-        timeout-minutes: 1
+      # - name: Checkout
+      #   uses: actions/checkout@v4
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        timeout-minutes: 1
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID}}:role/${{ env.AWS_DEPLOY_ROLE }}
+      #     aws-region: ${{ env.AWS_REGION }}
+      #   timeout-minutes: 1
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
-          DEMO_SECRET: ${{ env.DEMO_SECRET }}
-        run: |
-          docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
+      #   timeout-minutes: 1
 
-      - name: Download task definition
-        id: task-deff
-        run: |
-          aws ecs describe-task-definition --task-definition taskDefLineBotFlask --query taskDefinition > task-definition.json
+      # - name: Build, tag, and push image to Amazon ECR
+      #   id: build-image
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     IMAGE_TAG: ${{ github.ref }}
+      #     DEMO_SECRET: ${{ env.DEMO_SECRET }}
+      #   run: |
+      #     docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      #     docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      #     echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      # - name: Download task definition
+      #   id: task-deff
+      #   run: |
+      #     aws ecs describe-task-definition --task-definition taskDefLineBotFlask --query taskDefinition > task-definition.json
 
       # - name: Deploy Amazon ECS task definition
       #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
@@ -80,13 +88,13 @@ jobs:
       #     wait-for-service-stability: true
 
 
-  finally:
-    name: Notification
-    runs-on: ubuntu-latest
-    if: always()
-    needs: deploy
-    steps:
-      - name: Send Notification after deploy
-        timeout-minutes: 1
-        run: |
-          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "執行結果: ${{ needs.deploy.result }}","thread": {"threadKey": "${{ github.sha }}"}}'
+  # finally:
+  #   name: Notification
+  #   runs-on: ubuntu-latest
+  #   if: always()
+  #   needs: deploy
+  #   steps:
+  #     - name: Send Notification after deploy
+  #       timeout-minutes: 1
+  #       run: |
+  #         curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "執行結果: ${{ needs.deploy.result }}","thread": {"threadKey": "${{ github.ref }}"}}'

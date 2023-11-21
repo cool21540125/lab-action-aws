@@ -1,4 +1,5 @@
-name: reusable workflow to deploy to Amazon ECS
+name: deploy to Amazon ECS by @${{ github.actor }}
+
 
 env:
   AWS_DEPLOY_ROLE: ${{ vars.AWS_DEPLOY_ROLE}}
@@ -11,16 +12,13 @@ env:
 
 
 on:
-  workflow_call:
-    inputs:
-      stage:
-        required: true
-        type: string
-      secrets:
-        AWS_ACCESS_KEY_ID:
-          required: true
-        AWS_SECRET_ACCESS_KEY:
-          required: true
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'release/*'
+      - '*'
 
 
 jobs:
@@ -37,9 +35,13 @@ jobs:
           #!/bin/env bash
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
+            # echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV
           else
             TAG=${{ github.ref }}
             echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.PRD_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
+            # echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PRD_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV
           fi
           echo $TAG
 
@@ -48,7 +50,7 @@ jobs:
           #!/bin/env bash
           echo "--------------------"
           echo ${{ env.AWS_ACCESS_KEY_ID }}
-          echo ${{ env.AWS_SECRET_ACCESS_KEY } }}
+          # echo ${{ env.AWS_SECRET_ACCESS_KEY } }}
           echo ${{ env.TAG }}
           echo "--------------------"
 

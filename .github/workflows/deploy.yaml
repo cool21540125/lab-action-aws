@@ -32,15 +32,16 @@ jobs:
 
     steps:
       - name: testing
+
         run: |
           #!/bin/env bash
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]];  then
             TAG=${{ github.sha }}
-            export AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}
+            echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
           else
             TAG=${{ github.ref }}
             TAG=${TAG##*/}
-            export AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}
+            echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
           fi
           echo $TAG
 

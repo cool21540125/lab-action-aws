@@ -9,8 +9,8 @@ on:
       - main
       - master
     tags:
-      - 'release/*'
       - '*'
+      - 'release/**'
 
 
 env:
@@ -38,11 +38,13 @@ jobs:
           #!/bin/env bash
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
-            echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV
           else
             TAG=${{ github.ref }}
             echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
-            echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.PRD_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PRD_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV
           fi
           echo $TAG
 
@@ -57,7 +59,7 @@ jobs:
       # - name: Configure AWS credentials
       #   uses: aws-actions/configure-aws-credentials@v4
       #   with:
-      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID}}:role/${{ env.AWS_DEPLOY_ROLE }}
+      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCESS_KEY_ID }}:role/${{ env.AWS_DEPLOY_ROLE }}
       #     aws-region: ${{ env.AWS_REGION }}
       #   timeout-minutes: 1
 
@@ -65,7 +67,7 @@ jobs:
         run: |
           #!/bin/env bash
           echo "--------------------"
-          echo ${{ env.AWS_ACCOUNT_ID }}
+          echo ${{ env.AWS_ACCESS_KEY_ID }}
           echo ${{ env.TAG }}
           echo "--------------------"
 

@@ -38,12 +38,12 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
             echo "AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
-            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV"
           else
             TAG=${{ github.ref }}
             echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
             echo "AWS_ACCESS_KEY_ID=${{ secrets.PRD_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
-            # echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PRD_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV
+            # echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PRD_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV"
           fi
           echo $TAG
 

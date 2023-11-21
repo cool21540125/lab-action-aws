@@ -38,7 +38,7 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
             echo "AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
-            # echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV
           else
             TAG=${{ github.ref }}
             echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
@@ -52,9 +52,11 @@ jobs:
           #!/bin/env bash
           echo "--------------------"
           echo ${{ env.AWS_ACCESS_KEY_ID }}
-          # echo ${{ env.AWS_SECRET_ACCESS_KEY }}
+          echo ${{ env.AWS_SECRET_ACCESS_KEY }}
           echo ${{ env.TAG }}
           echo "--------------------"
+          aws s3 ls
+          echo "===================="
 
       # - name: Send Notification and start deploy
       #   timeout-minutes: 1

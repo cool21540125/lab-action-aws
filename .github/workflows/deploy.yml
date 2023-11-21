@@ -1,4 +1,6 @@
-name: deploy to Amazon ECS by @${{ github.actor }}
+name: Deploy to Amazon ECS
+
+run-name: Deploy to ECS triggered by @${{ github.actor }}
 
 
 env:

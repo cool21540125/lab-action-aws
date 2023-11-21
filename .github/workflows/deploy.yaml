@@ -10,6 +10,7 @@ on:
       - master
     tags:
       - 'release/*'
+      - '*'
 
 
 env:

@@ -33,6 +33,7 @@ jobs:
       - name: Decide Environment
         id: trigger-env
         run: |
+          #!/bin/env bash
           if [[ "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
             echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"

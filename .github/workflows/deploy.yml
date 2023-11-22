@@ -54,40 +54,42 @@ jobs:
           echo "-------------"
           curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送Commit : `${{env.TAG}}` 到 `${{ github.repository }}`, 開始觸發CDPipeline", "thread": {"threadKey": "${{ github.ref }}"}}'
 
-      # - name: Checkout
-      #   uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   env:
-      #     AWS_ACCOUNT_ID: ${{ steps.trigger-env.outputs.AWS_ACCOUNT_ID }}
-      #   with:
-      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ECS_TASK_EXECUTION_ROLE }}
-      #     aws-region: ${{ env.AWS_REGION }}
-      #   timeout-minutes: 1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        env:
+          AWS_ACCOUNT_ID: ${{ steps.trigger-env.outputs.AWS_ACCOUNT_ID }}
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ECS_TASK_EXECUTION_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+        timeout-minutes: 1
 
-      # - name: Login to Amazon ECR
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@v2
-      #   timeout-minutes: 1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        timeout-minutes: 1
 
-      # - name: Build, tag, and push image to Amazon ECR
-      #   id: build-image
-      #   env:
-      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     IMAGE_TAG: ${{ steps.trigger-env.outputs.TAG }}
-      #     DEMO_SECRET: ${{ env.DEMO_SECRET }}
-      #   run: |
-      #     docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-      #     docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-      #     echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.trigger-env.outputs.TAG }}
+          DEMO_SECRET: ${{ env.DEMO_SECRET }}
+        run: |
+          docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          # docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          # docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      # - name: Download task definition
-      #   id: task-deff
-      #   run: |
-      #     aws ecs describe-task-definition --task-definition taskDefLineBotFlask --query ${{ env.ECS_TASK_DEFINITION }} > task-definition.json
+      - name: Download task definition
+        shell: bash
+        id: task-deff
+        run: |
+          aws ecs describe-task-definition --task-definition taskDefLineBotFlask --query ${{ env.ECS_TASK_DEFINITION }} > task-definition.json
+          cat task-definition.json
 
       # - name: Render Amazon ECS task definition
       #   id: task-def

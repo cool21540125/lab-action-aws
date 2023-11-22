@@ -111,6 +111,7 @@ jobs:
     name: Notification
     runs-on: ubuntu-latest
     needs: deploy
+    if: always()
     steps:
       - name: Send Notification after deploy
         timeout-minutes: 1

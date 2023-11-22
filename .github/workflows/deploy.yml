@@ -4,23 +4,21 @@ run-name: Deploy to ECS triggered by @${{ github.actor }}
 
 
 env:
-  ECS_EXECUTION_ROLE: ${{ vars.ECS_EXECUTION_ROLE}}
+  CHAT_WEBHOOK: ${{ secrets.CHAT_WEBHOOK}}
   AWS_REGION: ${{ vars.AWS_REGION }}
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
   ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }}
   ECS_SERVICE: ${{ vars.ECS_SERVICE }}
-  CHAT_WEBHOOK: ${{ secrets.CHAT_WEBHOOK}}
-  DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+  ECS_TASK_EXECUTION_ROLE: ${{ vars.ECS_TASK_EXECUTION_ROLE}}
 
 
 on:
   push:
     branches:
-      - main
       - master
     tags:
       - 'release/*'
-      - '*'
 
 
 jobs:
@@ -32,68 +30,47 @@ jobs:
       id-token: write
 
     steps:
-      - name: testing
+      - name: Decide Environment
+        id: trigger-env
         run: |
-          #!/bin/env bash
-          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]];  then
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
-            echo "AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
-            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV"
+            echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
           else
             TAG=${{ github.ref }}
             echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
-            echo "AWS_ACCESS_KEY_ID=${{ secrets.PRD_AWS_ACCESS_KEY_ID }}" >> "$GITHUB_ENV"
-            # echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PRD_AWS_SECRET_ACCESS_KEY }}" >> "$GITHUB_ENV"
+            echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
           fi
-          echo $TAG
+          echo "------ debug ------"
+          echo "$TAG"
+          echo "$AWS_ACCOUNT_ID"
+          echo "------ debug ------"
 
-      - name: testing2
+      - name: Send Notification and start deploy
+        timeout-minutes: 1
         run: |
-          #!/bin/env bash
-          echo "--------------------"
-          echo ${{ env.AWS_ACCESS_KEY_ID }}
-          echo ${{ env.AWS_SECRET_ACCESS_KEY }}
-          echo ${{ env.TAG }}
-          echo "--------------------"
-          aws --version
-          aws sts get-caller-identity
-          echo "===================="
-
-      # - name: Send Notification and start deploy
-      #   timeout-minutes: 1
-      #   run: |
-      #     curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送 Commit: `${{ github.ref }}` 到 `${{ github.repository }}`, 開始觸發 CD Pipeline","thread": {"threadKey": "${{ github.ref }}"}}'
+          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送 Commit: `${{ github.ref }}` 到 `${{ github.repository }}`, 開始觸發 CD Pipeline","thread": {"threadKey": "${{ github.ref }}"}}
 
       # - name: Checkout
       #   uses: actions/checkout@v4
 
-      ### Assume Role for OIDC Usage
       # - name: Configure AWS credentials
       #   uses: aws-actions/configure-aws-credentials@v4
       #   with:
-      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCESS_KEY_ID }}:role/${{ env.ECS_EXECUTION_ROLE }}
+      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ECS_TASK_EXECUTION_ROLE }}
       #     aws-region: ${{ env.AWS_REGION }}
       #   timeout-minutes: 1
 
-      ### Assume Role for Cross Account Usage
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-        timeout-minutes: 1
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        timeout-minutes: 1
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
+      #   timeout-minutes: 1
 
       # - name: Build, tag, and push image to Amazon ECR
       #   id: build-image
       #   env:
       #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     IMAGE_TAG: ${{ github.ref }}
+      #     IMAGE_TAG: ${{ steps.trigger-env.outputs.TAG }}
       #     DEMO_SECRET: ${{ env.DEMO_SECRET }}
       #   run: |
       #     docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -105,25 +82,31 @@ jobs:
       # - name: Download task definition
       #   id: task-deff
       #   run: |
-      #     aws ecs describe-task-definition --task-definition taskDefLineBotFlask --query taskDefinition > task-definition.json
+      #     aws ecs describe-task-definition --task-definition taskDefLineBotFlask --query ${{ env.ECS_TASK_DEFINITION }} > task-definition.json
 
-      # - name: Deploy Amazon ECS task definition
-      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      #   id: ecs-deploy
+      # - name: Render Amazon ECS task definition
+      #   id: task-def
+      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
       #   with:
-      #     task-definition: task-definition.json
+      #     task-definition: ${{ steps.task-deff.outputs.taskDefinition }}
+      #     image: ${{ steps.build-image.outputs.image }}
+
+      # - name: Deploy to Amazon ECS service
+      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      #   with:
+      #     task-definition: ${{ steps.render-web-container.outputs.task-definition }}
       #     service: ${{ env.ECS_SERVICE }}
       #     cluster: ${{ env.ECS_CLUSTER }}
-      #     wait-for-service-stability: true
+      #     wait-for-service-stability: false
+      #     # wait-for-service-stability: true # commenting for now, due to https://github.com/aws-actions/amazon-ecs-deploy-task-definition/issues/102
 
 
-  # finally:
-  #   name: Notification
-  #   runs-on: ubuntu-latest
-  #   if: always()
-  #   needs: deploy
-  #   steps:
-  #     - name: Send Notification after deploy
-  #       timeout-minutes: 1
-  #       run: |
-  #         curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "執行結果: ${{ needs.deploy.result }}","thread": {"threadKey": "${{ github.ref }}"}}'
+  finally:
+    name: Notification
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Send Notification after deploy
+        timeout-minutes: 1
+        run: |
+          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "執行結果: ${{ needs.deploy.result }}","thread": {"threadKey": "${{ github.ref }}"}}'

@@ -34,6 +34,7 @@ jobs:
         id: trigger-env
         shell: bash
         run: |
+          echo "${{ github.ref }}"
           if [[ "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
             echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
@@ -42,9 +43,6 @@ jobs:
             echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
             echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
           fi
-          echo "------ debug ------"
-          echo $TAG
-          echo "------ debug ------"
 
       - name: Send Notification and start deploy
         shell: bash

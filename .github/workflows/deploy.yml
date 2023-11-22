@@ -34,14 +34,15 @@ jobs:
         id: trigger-env
         shell: bash
         run: |
-          echo "${{ github.ref }}"
           if [[ "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
             echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
+            echo 123
           else
             TAG=${{ github.ref }}
             echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
             echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
+            echo 456
           fi
 
       - name: Send Notification and start deploy
@@ -50,10 +51,7 @@ jobs:
           IMAGE_TAG: ${{ steps.trigger-env.outputs.TAG }}
         timeout-minutes: 1
         run: |
-          echo "------"
-          echo $TAG
-          echo "------"
-          # curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送 Commit: `$TAG` 到 `${{ github.repository }}`, 開始觸發 CD Pipeline","thread": {"threadKey": "${{ github.ref }}"}}
+          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送 Commit: `$TAG` 到 `${{ github.repository }}`, 開始觸發 CD Pipeline","thread": {"threadKey": "${{ github.ref }}"}}
 
       # - name: Checkout
       #   uses: actions/checkout@v4

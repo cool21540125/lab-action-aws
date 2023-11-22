@@ -49,9 +49,6 @@ jobs:
         shell: bash
         timeout-minutes: 1
         run: |
-          echo "-------------"
-          echo $TAG
-          echo "-------------"
           curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送: `${{ env.TAG }}` 到 `${{ github.repository }}`, 開始觸發CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
 
       - name: Checkout
@@ -80,8 +77,8 @@ jobs:
         run: |
           docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          # docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          # docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Download task definition

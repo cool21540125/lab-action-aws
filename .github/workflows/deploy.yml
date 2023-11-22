@@ -51,7 +51,7 @@ jobs:
           echo "-------------"
           echo $TAG
           echo "-------------"
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送Commit : `${{env.TAG}}` 到 `${{ github.repository }}`, 開始觸發CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送: `${{ env.TAG }}` 到 `${{ github.repository }}`, 開始觸發CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -79,32 +79,30 @@ jobs:
         run: |
           docker build --build-arg DEMO_SECRET=$DEMO_SECRET -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          # docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          # docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Download task definition
         shell: bash
-        id: task-deff
         run: |
           aws ecs describe-task-definition --task-definition taskDefLineBotFlask --query ${{ env.ECS_TASK_DEFINITION }} > task-definition.json
-          cat task-definition.json
 
-      # - name: Render Amazon ECS task definition
-      #   id: task-def
-      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-      #   with:
-      #     task-definition: ${{ steps.task-deff.outputs.taskDefinition }}
-      #     image: ${{ steps.build-image.outputs.image }}
+      - name: Render Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          image: ${{ steps.build-image.outputs.image }}
 
-      # - name: Deploy to Amazon ECS service
-      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      #   with:
-      #     task-definition: ${{ steps.render-web-container.outputs.task-definition }}
-      #     service: ${{ env.ECS_SERVICE }}
-      #     cluster: ${{ env.ECS_CLUSTER }}
-      #     wait-for-service-stability: false
-      #     # wait-for-service-stability: true # commenting for now, due to https://github.com/aws-actions/amazon-ecs-deploy-task-definition/issues/102
+      - name: Deploy to Amazon ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-web-container.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: false
+          # wait-for-service-stability: true # commenting for now, due to https://github.com/aws-actions/amazon-ecs-deploy-task-definition/issues/102
 
 
   finally:

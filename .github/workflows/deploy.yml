@@ -52,7 +52,7 @@ jobs:
           echo "-------------"
           echo $TAG
           echo "-------------"
-          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送 Commit: `${{ env.TAG }}` 到 `${{ github.repository }}`, 開始觸發 CD Pipeline","thread": {"threadKey": "${{ github.ref }}"}}
+          curl --request POST --url "${{ env.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "作者: `${{ github.triggering_actor }}` 推送Commit : `${{env.TAG}}` 到 `${{ github.repository }}`, 開始觸發CDPipeline", "thread": {"threadKey": "${{ github.ref }}"}}'
 
       # - name: Checkout
       #   uses: actions/checkout@v4

@@ -113,11 +113,11 @@ jobs:
         timeout-minutes: 1
         run: |
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
-            status="✅ Successful"
+            export status="✅ Successful"
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
-            status="❌ Failed"
+            export status="❌ Failed"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            status="❗️ Stopped"
+            export status="❗️ Stopped"
           else
             echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
             exit 1

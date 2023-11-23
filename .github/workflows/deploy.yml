@@ -123,4 +123,4 @@ jobs:
             exit 1
           fi
           
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "執行結果: $RESULT","thread": {"threadKey": "${{ github.sha }}"}}'
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{\"text\": \"執行結果: $RESULT\",\"thread\": {\"threadKey\": \"${{ github.sha }}\"}}"

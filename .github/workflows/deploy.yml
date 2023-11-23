@@ -113,21 +113,17 @@ jobs:
         timeout-minutes: 1
         run: |
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
-            echo "RESULT=✅ Successful" >> "$GITHUB_ENV"
+            echo "DEPLOY_RESULT=✅ Successful" >> "$GITHUB_ENV"
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
-            echo "RESULT=❌ Failure" >> "$GITHUB_ENV"
+            echo "DEPLOY_RESULT=❌ Failure" >> "$GITHUB_ENV"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            echo "RESULT=❗️ Stopped" >> "$GITHUB_ENV"
+            echo "DEPLOY_RESULT=❗️ Stopped" >> "$GITHUB_ENV"
           else
             echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
             exit 1
           fi
           echo "-------"
-          # echo "$RESULT"
-          # echo env.RESULT
-          # echo $env.RESULT
-          # echo ${{ env.RESULT }}}
-          # echo ${{ RESULT }}
+          echo "執行結果: $DEPLOY_RESULT"
           echo "-------"
           
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{\"text\": \"執行結果: $RESULT\",\"thread\": {\"threadKey\": \"${{ github.sha }}\"}}"
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{\"text\": \"執行結果: $DEPLOY_RESULT\",\"thread\": {\"threadKey\": \"${{ github.sha }}\"}}"

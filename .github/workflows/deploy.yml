@@ -113,14 +113,14 @@ jobs:
         timeout-minutes: 1
         run: |
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
-            export status="✅ Successful"
+            echo "RESULT=✅ Successful" >> "$GITHUB_ENV"
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
-            export status="❌ Failed"
+            echo "RESULT=❌ Failure" >> "$GITHUB_ENV"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            export status="❗️ Stopped"
+            echo "RESULT=❗️ Stopped" >> "$GITHUB_ENV"
           else
             echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
             exit 1
           fi
           
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "執行結果: ${{ env.status }}","thread": {"threadKey": "${{ github.sha }}"}}'
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "執行結果: $RESULT","thread": {"threadKey": "${{ github.sha }}"}}'

@@ -122,5 +122,12 @@ jobs:
             echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
             exit 1
           fi
+          echo "-------"
+          echo "$RESULT"
+          echo env.RESULT
+          echo $env.RESULT
+          echo ${{ env.RESULT }}}
+          echo ${{ RESULT }}
+          echo "-------"
           
           curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{\"text\": \"執行結果: $RESULT\",\"thread\": {\"threadKey\": \"${{ github.sha }}\"}}"

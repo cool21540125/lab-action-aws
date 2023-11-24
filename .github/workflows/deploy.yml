@@ -111,6 +111,9 @@ jobs:
       - name: Send Notification after deploy
         timeout-minutes: 1
         run: |
+          echo "----------"
+          echo ${{ env.TAG }}
+          echo "----------"
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
             DEPLOY_RESULT="✅ ${{ env.TAG }} deploy Sucessful."
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then

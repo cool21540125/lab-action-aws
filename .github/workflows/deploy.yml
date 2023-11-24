@@ -109,7 +109,6 @@ jobs:
   finally:
     name: Notification
     runs-on: ubuntu-latest
-    shell: bash
     needs: deploy
     if: always()
     env:
@@ -117,6 +116,7 @@ jobs:
       TAG: ${{ needs.deploy.outputs.TAG }}
     steps:
       - name: Send Notification after deploy
+        shell: bash
         timeout-minutes: 1
         run: |
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then

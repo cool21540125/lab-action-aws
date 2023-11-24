@@ -49,6 +49,11 @@ jobs:
         timeout-minutes: 1
         run: |
           curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` push `${{ env.TAG }}` to `${{ env.BUILD_ENV }}`", "thread": {"threadKey": "${{ github.sha }}"}}'
+        
+      - name: test pending
+        run: |
+          sleep 10
+          echo "test pending"
 
       # - name: Checkout
       #   uses: actions/checkout@v4

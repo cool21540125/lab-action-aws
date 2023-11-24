@@ -119,12 +119,15 @@ jobs:
         shell: bash
         timeout-minutes: 1
         run: |
-          if [[ "${{ needs.deploy.result }}" == "success" ]];  then
+          if [[ "${{ needs.deploy.result }}" == "success" ]]; then
             DEPLOY_RESULT="✅ Deploy `${{ env.TAG }}` success."
-          elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
+          elif [[ "${{ needs.deploy.result }}" == "failure" ]]; then
             DEPLOY_RESULT="❌ Deploy `${{ env.TAG }}` failure. Tracing: ${{ env.ACTION_URL }}"
           else
             DEPLOY_RESULT="❗️ Deploy `${{ env.TAG }}` cancelled/skipped. Tracing: ${{ env.ACTION_URL }}"
           fi
+          echo "-------"
+          echo $DEPLOY_RESULT
+          echo "-------"
           
           curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{'text': \"$DEPLOY_RESULT\", 'thread': { 'threadKey': \"${{ github.sha }}\"}}"

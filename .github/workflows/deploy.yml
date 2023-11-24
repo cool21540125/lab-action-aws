@@ -4,13 +4,7 @@ run-name: Deploy to ECS triggered by @${{ github.actor }}
 
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
-  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }}
-  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
-  CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
-  ECS_TASK_EXECUTION_ROLE: ${{ vars.ECS_TASK_EXECUTION_ROLE}}
 
 
 on:
@@ -35,12 +29,12 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/master" ]];  then
-            echo "TAG=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-            echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
+            echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
+            echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
           else
             TAG=${{ github.ref }}
-            echo "TAG=${TAG##*/}" >> "$GITHUB_OUTPUT"
-            echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
+            echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
+            echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
           fi
 
       - name: Send Notification and start deploy
@@ -59,8 +53,8 @@ jobs:
       #   env:
       #     AWS_ACCOUNT_ID: ${{ steps.trigger-env.outputs.AWS_ACCOUNT_ID }}
       #   with:
-      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ECS_TASK_EXECUTION_ROLE }}
-      #     aws-region: ${{ env.AWS_REGION }}
+      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ vars.ECS_TASK_EXECUTION_ROLE}}
+      #     aws-region: ${{ vars.AWS_REGION }}
       #   timeout-minutes: 1
 
       # - name: Login to Amazon ECR
@@ -84,22 +78,22 @@ jobs:
       # - name: Download task definition
       #   shell: bash
       #   run: |
-      #     aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
+      #     aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
 
       # - name: Render Amazon ECS task definition
       #   id: task-def
       #   uses: aws-actions/amazon-ecs-render-task-definition@v1
       #   with:
       #     task-definition: task-definition.json
-      #     container-name: ${{ env.CONTAINER_NAME }}
+      #     container-name: ${{ vars.CONTAINER_NAME }}
       #     image: ${{ steps.build-image.outputs.image }}
 
       # - name: Deploy Amazon ECS task definition
       #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       #   with:
       #     task-definition: ${{ steps.task-def.outputs.task-definition }}
-      #     service: ${{ env.ECS_SERVICE }}
-      #     cluster: ${{ env.ECS_CLUSTER }}
+      #     service: ${{ vars.ECS_SERVICE }}
+      #     cluster: ${{ vars.ECS_CLUSTER }}
       #     wait-for-service-stability: true
 
 
@@ -113,12 +107,19 @@ jobs:
         timeout-minutes: 1
         run: |
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
+            echo 111
             echo "DEPLOY_RESULT=✅ Successful" >> "$GITHUB_ENV"
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
+            echo 222
             echo "DEPLOY_RESULT=❌ Failure" >> "$GITHUB_ENV"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
+            echo 333
             echo "DEPLOY_RESULT=❗️ Stopped" >> "$GITHUB_ENV"
+          elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
+            echo 444
+            echo "DEPLOY_RESULT=❗️ Skipped" >> "$GITHUB_ENV"
           else
+            echo 555
             echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
             exit 1
           fi
@@ -126,4 +127,4 @@ jobs:
           echo "執行結果: $DEPLOY_RESULT"
           echo "-------"
           
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{\"text\": \"執行結果: $DEPLOY_RESULT\",\"thread\": {\"threadKey\": \"${{ github.sha }}\"}}"
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{'text': \"執行結果: $DEPLOY_RESULT\", 'thread': { 'threadKey': \"${{ github.sha }}\"}}"

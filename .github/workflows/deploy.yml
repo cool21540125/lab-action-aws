@@ -127,4 +127,4 @@ jobs:
           echo "執行結果: $DEPLOY_RESULT"
           echo "-------"
           
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{'text': \"執行結果: $DEPLOY_RESULT\", 'thread': { 'threadKey': \"${{ github.sha }}\"}}"
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{'text': \"$DEPLOY_RESULT\", 'thread': { 'threadKey': \"${{ github.sha }}\"}}"

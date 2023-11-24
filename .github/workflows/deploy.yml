@@ -43,7 +43,7 @@ jobs:
         shell: bash
         timeout-minutes: 1
         run: |
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` 推送: `$TAG` 到 `${{ github.repository }}`, 開始觸發CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` 推送: `${{ env.TAG }}` 到 `${{ github.repository }}`, 開始觸發CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
 
       # - name: Checkout
       #   uses: actions/checkout@v4
@@ -107,19 +107,14 @@ jobs:
         timeout-minutes: 1
         run: |
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
-            echo 111
-            echo "DEPLOY_RESULT=✅ Successful" >> "$GITHUB_ENV"
+            DEPLOY_RESULT="✅ Successful"
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
-            echo 222
-            echo "DEPLOY_RESULT=❌ Failure" >> "$GITHUB_ENV"
+            DEPLOY_RESULT="❌ Failure"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            echo 333
-            echo "DEPLOY_RESULT=❗️ Stopped" >> "$GITHUB_ENV"
+            DEPLOY_RESULT="❗️ Stopped"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            echo 444
-            echo "DEPLOY_RESULT=❗️ Skipped" >> "$GITHUB_ENV"
+            DEPLOY_RESULT="❗️ Skipped"
           else
-            echo 555
             echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
             exit 1
           fi

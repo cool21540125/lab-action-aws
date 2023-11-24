@@ -121,7 +121,9 @@ jobs:
         run: |
           echo 11111
           if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+            echo 22222
             DEPLOY_RESULT="✅ Deploy `${{ env.TAG }}` success."
+            echo 33333
           elif [[ "${{ needs.deploy.result }}" == "failure" ]]; then
             DEPLOY_RESULT="❌ Deploy `${{ env.TAG }}` failure. Tracing: ${{ env.ACTION_URL }}"
           else

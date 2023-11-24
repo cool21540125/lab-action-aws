@@ -106,7 +106,7 @@ jobs:
     if: always()
     env:
       ACTION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      TAG: ${{ steps.trigger-env.outputs.TAG }}
+      TAG: ${{ needs.deploy.trigger-env.outputs.TAG }}
     steps:
       - name: Send Notification after deploy
         timeout-minutes: 1

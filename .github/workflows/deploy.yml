@@ -123,7 +123,7 @@ jobs:
             exit 1
           fi
           echo "-------"
-          echo "執行結果: $DEPLOY_RESULT"
+          echo "執行結果: $DEPLOY_RESULT" 
           echo "-------"
           
           curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{'text': \"執行結果: $DEPLOY_RESULT\", 'thread': { 'threadKey': \"${{ github.sha }}\"}}"

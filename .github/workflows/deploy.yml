@@ -114,11 +114,10 @@ jobs:
         shell: bash
         timeout-minutes: 1
         run: |
-          echo 11111
           if [[ "${{ needs.deploy.result }}" == "success" ]]; then
-            curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "✅ Deploy `$TAG` success.", "thread": { "threadKey": "${{ github.sha }}"}}'
+            curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "✅ Deploy `${{ env.TAG }}` success.", "thread": { "threadKey": "${{ github.sha }}"}}'
           elif [[ "${{ needs.deploy.result }}" == "failure" ]]; then
-            curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "❌ Deploy `$TAG` failure. Tracing: ${{ env.ACTION_URL }}", "thread": { "threadKey": "${{ github.sha }}"}}'
+            curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "❌ Deploy `${{ env.TAG }}` failure. Tracing: ${{ env.ACTION_URL }}", "thread": { "threadKey": "${{ github.sha }}"}}'
           else
-            curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "❗️ Deploy `$TAG` cancelled/skipped. Tracing: ${{ env.ACTION_URL }}", "thread": { "threadKey": "${{ github.sha }}"}}'
+            curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "❗️ Deploy `${{ env.TAG }}` cancelled/skipped. Tracing: ${{ env.ACTION_URL }}", "thread": { "threadKey": "${{ github.sha }}"}}'
           fi

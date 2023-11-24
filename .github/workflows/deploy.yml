@@ -119,6 +119,7 @@ jobs:
         shell: bash
         timeout-minutes: 1
         run: |
+          echo 11111
           if [[ "${{ needs.deploy.result }}" == "success" ]]; then
             DEPLOY_RESULT="✅ Deploy `${{ env.TAG }}` success."
           elif [[ "${{ needs.deploy.result }}" == "failure" ]]; then

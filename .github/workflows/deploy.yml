@@ -31,20 +31,22 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_OUTPUT"
             echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
+            echo "BUILD_ENV=測試環境" >> "$GITHUB_OUTPUT"
           else
             TAG=${{ github.ref }}
             echo "TAG=${TAG##*/}" >> "$GITHUB_OUTPUT"
             echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
+            echo "BUILD_ENV=正式環境" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Send Notification and start deploy
         env:
           TAG: ${{ steps.trigger-env.outputs.TAG }}
-          ACTION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BUILD_ENV: ${{ steps.trigger-env.outputs.BUILD_ENV }}
         shell: bash
         timeout-minutes: 1
         run: |
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` 推送: `${{ env.TAG }}` 到 ${{ env.ACTION_URL }}, 開始觸發 CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` 推送: `${{ env.TAG }}` 到 ${{ env.BUILD_ENV }}, 開始觸發 CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -101,6 +103,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy
     if: always()
+    env:
+      ACTION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Send Notification after deploy
         timeout-minutes: 1
@@ -108,11 +112,11 @@ jobs:
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
             DEPLOY_RESULT="✅ Successful"
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
-            DEPLOY_RESULT="❌ Failure"
+            DEPLOY_RESULT="❌ Failure. 查看原因: ${{ env.ACTION_URL }}"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            DEPLOY_RESULT="❗️ Stopped"
+            DEPLOY_RESULT="❗️ Stopped. 查看原因: ${{ env.ACTION_URL }}"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            DEPLOY_RESULT="❗️ Skipped"
+            DEPLOY_RESULT="❗️ Skipped. 查看原因: ${{ env.ACTION_URL }}"
           else
             echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
             exit 1

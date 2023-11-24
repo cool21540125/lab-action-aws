@@ -113,23 +113,12 @@ jobs:
       - name: Send Notification after deploy
         timeout-minutes: 1
         run: |
-          echo "----------"
-          echo ${{ env.TAG }}
-          echo "----------"
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
-            DEPLOY_RESULT="✅ ${{ env.TAG }} deploy Sucessful."
+            DEPLOY_RESULT="✅ Deploy `${{ env.TAG }}` success."
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
-            DEPLOY_RESULT="❌ Failure. Tracing: ${{ env.ACTION_URL }}"
-          elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            DEPLOY_RESULT="❗️ Stopped. Tracing: ${{ env.ACTION_URL }}"
-          elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            DEPLOY_RESULT="❗️ Skipped. Tracing: ${{ env.ACTION_URL }}"
+            DEPLOY_RESULT="❌ Deploy `${{ env.TAG }}` ${{ needs.deploy.result }}. Tracing: ${{ env.ACTION_URL }}"
           else
-            echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
-            exit 1
+            DEPLOY_RESULT="❗️ Deploy `${{ env.TAG }}` ${{ needs.deploy.result }}. Tracing: ${{ env.ACTION_URL }}"
           fi
-          echo "-------"
-          echo "執行結果: $DEPLOY_RESULT"
-          echo "-------"
           
           curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{'text': \"$DEPLOY_RESULT\", 'thread': { 'threadKey': \"${{ github.sha }}\"}}"

@@ -29,12 +29,12 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/master" ]];  then
-            echo "TAG=${{ github.sha }}" >> "$GITHUB_ENV"
-            echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
+            echo "TAG=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
           else
             TAG=${{ github.ref }}
-            echo "TAG=${TAG##*/}" >> "$GITHUB_ENV"
-            echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_ENV"
+            echo "TAG=${TAG##*/}" >> "$GITHUB_OUTPUT"
+            echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Send Notification and start deploy

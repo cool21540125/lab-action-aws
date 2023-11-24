@@ -40,10 +40,11 @@ jobs:
       - name: Send Notification and start deploy
         env:
           TAG: ${{ steps.trigger-env.outputs.TAG }}
+          ACTION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         shell: bash
         timeout-minutes: 1
         run: |
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` 推送: `${{ env.TAG }}` 到 `${{ github.repository }}`, 開始觸發CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` 推送: `${{ env.TAG }}` 到 ${{ env.ACTION_URL }}, 開始觸發 CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
 
       - name: Checkout
         uses: actions/checkout@v4

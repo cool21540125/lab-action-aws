@@ -22,6 +22,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      TAG: ${{ steps.trigger-env.outputs.TAG }}
 
     steps:
       - name: Decide Environment

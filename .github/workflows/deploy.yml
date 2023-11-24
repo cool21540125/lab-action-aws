@@ -31,12 +31,12 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/master" ]];  then
             echo "TAG=${{ github.sha }}" >> "$GITHUB_OUTPUT"
             echo "AWS_ACCOUNT_ID=${{ secrets.DEV_AWS_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
-            echo "BUILD_ENV=測試環境" >> "$GITHUB_OUTPUT"
+            echo "BUILD_ENV=Development" >> "$GITHUB_OUTPUT"
           else
             TAG=${{ github.ref }}
             echo "TAG=${TAG##*/}" >> "$GITHUB_OUTPUT"
             echo "AWS_ACCOUNT_ID=${{ secrets.PRD_AWS_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
-            echo "BUILD_ENV=正式環境" >> "$GITHUB_OUTPUT"
+            echo "BUILD_ENV=Production" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Send Notification and start deploy
@@ -106,7 +106,7 @@ jobs:
     if: always()
     env:
       ACTION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      TAG: ${{ needs.deploy.trigger-env.outputs.TAG }}
+      TAG: ${{ needs.deploy.outputs.TAG }}
     steps:
       - name: Send Notification after deploy
         timeout-minutes: 1

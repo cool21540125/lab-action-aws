@@ -48,55 +48,55 @@ jobs:
         run: |
           curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` push `${{ env.TAG }}` to `${{ env.BUILD_ENV }}`", "thread": {"threadKey": "${{ github.sha }}"}}'
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      # - name: Checkout
+      #   uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        env:
-          AWS_ACCOUNT_ID: ${{ steps.trigger-env.outputs.AWS_ACCOUNT_ID }}
-        with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ vars.ECS_TASK_EXECUTION_ROLE}}
-          aws-region: ${{ vars.AWS_REGION }}
-        timeout-minutes: 1
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   env:
+      #     AWS_ACCOUNT_ID: ${{ steps.trigger-env.outputs.AWS_ACCOUNT_ID }}
+      #   with:
+      #     role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ vars.ECS_TASK_EXECUTION_ROLE}}
+      #     aws-region: ${{ vars.AWS_REGION }}
+      #   timeout-minutes: 1
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        timeout-minutes: 1
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
+      #   timeout-minutes: 1
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ steps.trigger-env.outputs.TAG }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      # - name: Build, tag, and push image to Amazon ECR
+      #   id: build-image
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     IMAGE_TAG: ${{ steps.trigger-env.outputs.TAG }}
+      #   run: |
+      #     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      #     docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      #     echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Download task definition
-        shell: bash
-        run: |
-          aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
+      # - name: Download task definition
+      #   shell: bash
+      #   run: |
+      #     aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
 
-      - name: Render Amazon ECS task definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ vars.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+      # - name: Render Amazon ECS task definition
+      #   id: task-def
+      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+      #   with:
+      #     task-definition: task-definition.json
+      #     container-name: ${{ vars.CONTAINER_NAME }}
+      #     image: ${{ steps.build-image.outputs.image }}
 
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ vars.ECS_SERVICE }}
-          cluster: ${{ vars.ECS_CLUSTER }}
-          wait-for-service-stability: true
+      # - name: Deploy Amazon ECS task definition
+      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      #   with:
+      #     task-definition: ${{ steps.task-def.outputs.task-definition }}
+      #     service: ${{ vars.ECS_SERVICE }}
+      #     cluster: ${{ vars.ECS_CLUSTER }}
+      #     wait-for-service-stability: true
 
 
   finally:
@@ -106,12 +106,13 @@ jobs:
     if: always()
     env:
       ACTION_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      TAG: ${{ steps.trigger-env.outputs.TAG }}
     steps:
       - name: Send Notification after deploy
         timeout-minutes: 1
         run: |
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
-            DEPLOY_RESULT="✅ <font color=\"#008000\">Successful</text>"
+            DEPLOY_RESULT="✅ ${{ env.TAG }} deploy Sucessful."
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
             DEPLOY_RESULT="❌ Failure. Tracing: ${{ env.ACTION_URL }}"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
@@ -123,7 +124,7 @@ jobs:
             exit 1
           fi
           echo "-------"
-          echo "執行結果: $DEPLOY_RESULT" 
+          echo "執行結果: $DEPLOY_RESULT"
           echo "-------"
           
           curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data "{'text': \"執行結果: $DEPLOY_RESULT\", 'thread': { 'threadKey': \"${{ github.sha }}\"}}"

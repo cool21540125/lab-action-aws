@@ -46,7 +46,7 @@ jobs:
         shell: bash
         timeout-minutes: 1
         run: |
-          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` 推送: `${{ env.TAG }}` 到 ${{ env.BUILD_ENV }}, 開始觸發 CDPipeline", "thread": {"threadKey": "${{ github.sha }}"}}'
+          curl --request POST --url "${{ secrets.CHAT_WEBHOOK }}" --header "content-type: application/json" --data '{"text": "🚀  `${{ github.triggering_actor }}` push `${{ env.TAG }}` to `${{ env.BUILD_ENV }}`", "thread": {"threadKey": "${{ github.sha }}"}}'
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -111,13 +111,13 @@ jobs:
         timeout-minutes: 1
         run: |
           if [[ "${{ needs.deploy.result }}" == "success" ]];  then
-            DEPLOY_RESULT="✅ Successful"
+            DEPLOY_RESULT="✅ <font color=\"#008000\">Successful</text>"
           elif [[ "${{ needs.deploy.result }}" == "failure" ]];  then
-            DEPLOY_RESULT="❌ Failure. 查看原因: ${{ env.ACTION_URL }}"
+            DEPLOY_RESULT="❌ Failure. Tracing: ${{ env.ACTION_URL }}"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            DEPLOY_RESULT="❗️ Stopped. 查看原因: ${{ env.ACTION_URL }}"
+            DEPLOY_RESULT="❗️ Stopped. Tracing: ${{ env.ACTION_URL }}"
           elif [[ "${{ needs.deploy.result }}" == "cancelled" ]];  then
-            DEPLOY_RESULT="❗️ Skipped. 查看原因: ${{ env.ACTION_URL }}"
+            DEPLOY_RESULT="❗️ Skipped. Tracing: ${{ env.ACTION_URL }}"
           else
             echo "執行結果出現例外狀況(聯繫 DevOps 協助排查): ${{ needs.deploy.result }}"
             exit 1

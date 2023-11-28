@@ -1,0 +1,60 @@
+options:
+  max-time: 20
+
+clone:
+  depth: 1
+
+definitions:
+
+  bbpDeployPort: &bbpDeployPort
+    name: npm build && docker build && deploy
+    script:
+      - export ABCD=${BITBUCKET_BRANCH##*-}  #
+      - export PORT=${BITBUCKET_BRANCH##*-}  #
+      - echo "-------------"
+      - echo $ABCD
+      - echo $PORT
+      - echo "-------------"
+      # - cp .env.local.base .env.local
+      # - docker build --build-arg ABCD=$ABCD -f dev-ops/Dockerfile-alpine -t web-$ABCD .
+      # - docker rm -f web || true
+      # - docker run -d --name web-$ABCD-$PORT --hostname web-$ABCD --restart always -p 3000:3000 web-$ABCD
+      # - docker rmi $(docker images | grep -E "^web-.? " | awk '{print $3}') || true
+      # - docker rmi $(docker images | grep -E "<none> +<none>" | awk '{print $3}') || true
+    runs-on:
+      - self.hosted
+      - linux.shell
+      - dev70
+
+  bbpDeploy: &bbpDeploy
+    name: npm build && docker build && deploy
+    script:
+      - export ABCD=${BITBUCKET_BRANCH##*-}
+      - echo "-------------"
+      - echo $ABCD
+      - echo "-------------"
+      # - cp .env.local.base .env.local
+      # - docker build --build-arg ABCD=$ABCD -f dev-ops/Dockerfile-alpine -t web-$ABCD .
+      # - docker rm -f web || true
+      # - docker run -d --name web --hostname web-$ABCD --restart always -p 3000:3000 web-$ABCD
+      # - docker rmi $(docker images | grep -E "^web-.? " | awk '{print $3}') || true
+      # - docker rmi $(docker images | grep -E "<none> +<none>" | awk '{print $3}') || true
+    runs-on:
+      - self.hosted
+      - linux.shell
+      - dev70
+
+pipelines:
+  branches:
+    release/development-*-*:
+      - stage:
+          name: Build and Deploy to Development-ABCD different Port
+          deployment: Development
+          steps:
+            - step: *bbpDeployPort
+    release/development-*:
+      - stage:
+          name: Build and Deploy to Development-ABCD
+          deployment: Development
+          steps:
+            - step: *bbpDeploy
